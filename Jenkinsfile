@@ -1,24 +1,39 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage("code checkout"){
-            steps{
-                git branch: 'main', credentialsId: 'github', url: 'https://github.com/vinaylekkalapudii/my-maven-project'
+        environment {
+        DOCKER_CREDENTIALS = 'docker'  // The credentials ID from Jenkins (created in Jenkins > Manage Credentials)
+    }
+
+
+    stages {
+        stage('git checkout') {
+            steps {
+               git branch: 'main', url: 'https://github.com/vinaylekkalapudii/my-maven-project/'
             }
         }
-        stage("maven build"){
+        
+        stage('run docker file and create image'){
             steps{
-                sh "mvn clean package"
+                sh 'docker build -t vinaylekkalapudii/newmavenjen:v1 .'
             }
         }
-        stage("tomcat deploy -dev"){
+        stage('docker login'){
             steps{
-                sshagent(['tomcat.dev']) {
-                  sh" scp -o StrictHostKeyChecking=no target/my-maven-project.war ec2-user@172.31.24.34:/opt/tomcat10/webapps"
-                   sh" ssh ec2-user@172.31.24.34 /opt/tomcat10/bin/shutdown.sh"
-                   sh" ssh ec2-user@172.31.24.34 /opt/tomcat10/bin/startup.sh"
+                withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"  // Use credentials for login
+               
                 }
             }
         }
+        
+        stage("docker push"){
+            steps{
+                '''
+                sh 'docker run -d -p 5050:8080 vinaylekkalapudii/newmavenjen:v1'
+                sh 'docker push vinaylekkalapudii/newmavenjen:v1'
+                '''
+            }
+        }
+        
     }
 }
