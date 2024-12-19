@@ -1,39 +1,40 @@
 pipeline {
     agent any
-        environment {
+
+    environment {
         DOCKER_CREDENTIALS = 'docker'  // The credentials ID from Jenkins (created in Jenkins > Manage Credentials)
     }
 
-
     stages {
-        stage('git checkout') {
+        // Stage 1: Git Checkout
+        stage('Git Checkout') {
             steps {
-               git branch: 'main', url: 'https://github.com/vinaylekkalapudii/my-maven-project/'
+                git branch: 'main', url: 'https://github.com/vinaylekkalapudii/my-maven-project/'
             }
         }
-        
-        stage('run docker file and create image'){
-            steps{
-                sh 'docker build -t vinaylekkalapudii/newmavenjen:v1 .'
+
+        // Stage 2: Run Docker Build to create an image
+        stage('Run Docker Build') {
+            steps {
+                sh 'docker build -t vinaylekkalapudii/newmavenjen:v1 .'  // Build the Docker image with tag 'v1'
             }
         }
-        stage('docker login'){
-            steps{
+
+        // Stage 3: Docker Login
+        stage('Docker Login') {
+            steps {
                 withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"  // Use credentials for login
-               
+                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"  // Docker login using credentials
                 }
             }
         }
-        
-        stage("docker push"){
-            steps{
-                '''
-                sh 'docker run -d -p 5050:8080 vinaylekkalapudii/newmavenjen:v1'
-                sh 'docker push vinaylekkalapudii/newmavenjen:v1'
-                '''
+
+        // Stage 4: Docker Push
+        stage('Docker Push') {
+            steps {
+                sh 'docker run -d -p 5050:8080 vinaylekkalapudii/newmavenjen:v1'  // Run Docker container (optional, only if needed for testing)
+                sh 'docker push vinaylekkalapudii/newmavenjen:v1'  // Push the Docker image to the registry
             }
         }
-        
     }
 }
