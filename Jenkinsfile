@@ -27,13 +27,13 @@ pipeline {
         }
 
         // Stage 3: Docker Login
-        stage('Docker Login') {
+      stage('Docker Login') {
             steps {
-                script {
-                    echo "Logging into Docker..."
-                }
                 withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"  // Docker login using credentials
+                    // Use the credentials securely inside this block
+                    sh """
+                    echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+                    """
                 }
             }
         }
