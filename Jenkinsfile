@@ -22,7 +22,7 @@ pipeline {
                 script {
                     echo "Building the Docker image..."
                 }
-                sh 'docker build -t vinaylekkalapudii/newmavenjen:v1 .'  // Build the Docker image with tag 'v1'
+                sh 'docker build -t vinaylekkalapudii/newmavenjen:v2 .'  // Build the Docker image with tag 'v1'
             }
         }
 
@@ -44,8 +44,8 @@ pipeline {
                 script {
                     echo "Running Docker container and pushing the image..."
                 }
-                sh 'docker run -d -p 5050:8080 vinaylekkalapudii/newmavenjen:v1'  // Run Docker container (optional, only if needed for testing)
-                sh 'docker push vinaylekkalapudii/newmavenjen:v1'  // Push the Docker image to the registry
+                sh 'docker run -d -p 5051:8080 vinaylekkalapudii/newmavenjen:v1'  // Run Docker container (optional, only if needed for testing)
+                sh 'docker push vinaylekkalapudii/newmavenjen:v2'  // Push the Docker image to the registry
             }
         }
     }
